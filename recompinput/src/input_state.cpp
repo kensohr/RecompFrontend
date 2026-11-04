@@ -98,7 +98,21 @@ void recompinput::update_rumble() {
     if (!recompui::config::general::has_rumble_strength_option()) {
         return;
     }
-    size_t rumbles_to_run = recompinput::players::is_single_player_mode() ? 1 : recompinput::players::get_number_of_assigned_players();
+    bool rumbles_all_controllers = recompinput::players::reads_all_controllers(0);
+
+    // Rumble starts with a very long duration, and from here on an unassigned controller gets no more updates,
+    // so one that was rumbling for everybody has to be told to stop once.
+    static bool rumbled_all_controllers = false;
+    if (rumbled_all_controllers && !rumbles_all_controllers) {
+        std::lock_guard lock{ InputState.controllers_mutex };
+        for (const auto &controller : InputState.detected_controllers) {
+            do_rumble(controller, 0, 0);
+        }
+        printf("Players assigned: stopped rumble on %zu controllers before handing rumble to the players\n", InputState.detected_controllers.size());
+    }
+    rumbled_all_controllers = rumbles_all_controllers;
+
+    size_t rumbles_to_run = rumbles_all_controllers ? 1 : recompinput::players::get_number_of_assigned_players();
     if (rumbles_to_run > InputState.cur_rumble.size()) {
         rumbles_to_run = InputState.cur_rumble.size();
     }
@@ -119,7 +133,7 @@ void recompinput::update_rumble() {
         uint32_t duration = 1000000; // Dummy duration value that lasts long enough to matter as the game will reset rumble on its own.
         {
             std::lock_guard lock{ InputState.controllers_mutex };
-            if (recompinput::players::is_single_player_mode()) {
+            if (rumbles_all_controllers) {
                 for (const auto &controller : InputState.detected_controllers) {
                     do_rumble(controller, rumble_strength, duration);
                 }
@@ -140,7 +154,7 @@ bool controller_button_state(int controller_num, int32_t input_id) {
         bool ret = false;
         {
             std::lock_guard lock{ InputState.controllers_mutex };
-            if (recompinput::players::is_single_player_mode()) {
+            if (recompinput::players::reads_all_controllers(controller_num)) {
                 for (const auto &controller : InputState.detected_controllers) {
                     ret |= SDL_GameControllerGetButton(controller, button);
                 }
@@ -183,7 +197,7 @@ float controller_axis_state(int controller_num, int32_t input_id, bool allow_sup
             };
 
             std::lock_guard lock{ InputState.controllers_mutex };
-            if (recompinput::players::is_single_player_mode()) {
+            if (recompinput::players::reads_all_controllers(controller_num)) {
                 for (SDL_GameController *controller : InputState.detected_controllers) {
                     float controller_state = gather_axis_state(controller);
                     if (fabsf(controller_state) > fabsf(ret)) {

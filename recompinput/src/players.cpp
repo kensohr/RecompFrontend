@@ -77,6 +77,14 @@ bool players::is_single_player_mode() {
     return PlayerState.single_player_mode;
 }
 
+bool players::reads_all_controllers(int player_index) {
+    if (PlayerState.single_player_mode) {
+        return true;
+    }
+    bool is_nobody_assigned = PlayerState.players.get_count() == 0;
+    return player_index == 0 && is_nobody_assigned;
+}
+
 void players::set_single_player_mode(bool single_player) {
     if (!single_player && single_player != PlayerState.single_player_mode) {
         purge_deferred_controller_profiles();

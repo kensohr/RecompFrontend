@@ -19,6 +19,9 @@ namespace recompinput {
         size_t get_max_number_of_players();
         bool is_single_player_mode();
         void set_single_player_mode(bool single_player);
+        // True when this player index reads every detected controller and rumbles all of them instead of one
+        // assigned controller: always in single player mode, and for player 0 while nobody is assigned.
+        bool reads_all_controllers(int player_index);
         void set_min_number_of_players(size_t min_players);
         void set_max_number_of_players(size_t max_players);
         void set_player_count_range(size_t min_players, size_t max_players);
