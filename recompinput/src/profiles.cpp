@@ -399,6 +399,13 @@ namespace recompinput {
             
             int profile_index_cont = players::is_single_player_mode() ? profiles::get_sp_controller_profile_index() : players_input_profile_indices[player_index].first;
             int profile_index_kb = players::is_single_player_mode() ? profiles::get_sp_keyboard_profile_index() : players_input_profile_indices[player_index].second;
+            // Skipped here rather than cleared in the slot: UI code indexes the slots without a -1 check.
+            if (!players::reads_input_device(player_index, InputDevice::Controller)) {
+                profile_index_cont = -1;
+            }
+            if (!players::reads_input_device(player_index, InputDevice::Keyboard)) {
+                profile_index_kb = -1;
+            }
             check_buttons(profile_index_cont);
             check_buttons(profile_index_kb);
 

@@ -85,6 +85,13 @@ bool players::reads_all_controllers(int player_index) {
     return player_index == 0 && is_nobody_assigned;
 }
 
+bool players::reads_input_device(int player_index, InputDevice device) {
+    if (PlayerState.single_player_mode || !players::get_player_is_assigned(player_index)) {
+        return true;
+    }
+    return players::get_player_input_device(player_index) == device;
+}
+
 void players::set_single_player_mode(bool single_player) {
     if (!single_player && single_player != PlayerState.single_player_mode) {
         purge_deferred_controller_profiles();

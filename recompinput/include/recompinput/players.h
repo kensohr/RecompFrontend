@@ -22,6 +22,10 @@ namespace recompinput {
         // True when this player index reads every detected controller and rumbles all of them instead of one
         // assigned controller: always in single player mode, and for player 0 while nobody is assigned.
         bool reads_all_controllers(int player_index);
+        // True when this player index's game input reads its input profile for this device. An assigned player in
+        // multiplayer mode reads only the device it was assigned, so a profile left in its other slot (the single
+        // player keyboard, for one) can't reach its port. Single player mode and an unassigned player read both.
+        bool reads_input_device(int player_index, InputDevice device);
         void set_min_number_of_players(size_t min_players);
         void set_max_number_of_players(size_t max_players);
         void set_player_count_range(size_t min_players, size_t max_players);
